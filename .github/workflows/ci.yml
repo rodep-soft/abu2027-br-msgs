@@ -1,0 +1,32 @@
+name: ROS 2 Message CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-validate:
+    name: Validate ROS 2 Messages (Jazzy)
+    runs-on: ubuntu-24.04
+    container:
+      image: ros:jazzy-ros-base
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: src/robot_msgs
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          apt-get update
+          rosdep update
+          rosdep install -i --from-paths src --rosdistro jazzy -y
+
+      - name: Build package
+        shell: bash
+        run: |
+          . /opt/ros/jazzy/setup.sh
+          colcon build --packages-select robot_msgs
